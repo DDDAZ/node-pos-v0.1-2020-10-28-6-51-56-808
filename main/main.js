@@ -21,7 +21,6 @@ function printReceipt(arr) {
     var counts = getCount(arr, names);
     var sum = 0;
     for (let i = 0; i < names.length; i++) {
-        let stringLine;
         if (objects[i].Unit != 'a') {
             item = `Name: ${names[i]}, Quantity: ${counts[i]} ${objects[i].Unit}s, Unit price: ${objects[i].Price.toFixed(2)} (yuan), Subtotal: ${(objects[i].Price * counts[i]).toFixed(2)} (yuan)`;
             sum += objects[i].Price * counts[i];
