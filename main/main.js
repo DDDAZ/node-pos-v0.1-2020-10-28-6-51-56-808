@@ -4,47 +4,37 @@ module.exports = function main(inputs) {
     return printReceipt(inputs);
 };
 
-function printReceipt(arr) {
-    // Name: Coca-Cola, Quantity: 5 bottles, Unit price: 3.00 (yuan), Subtotal: 15.00 (yuan)
-    var names = [];
-    var objects = [];
-    var strings = [];
 
-    for (let i = 0; i < arr.length; i++) {
-        if (names.includes(arr[i].Name)) {
-            continue;
-        }
-        names.push(arr[i].Name);
-        objects.push(arr[i]);
-    }
+function printReceipt(inputs) {
 
-    var counts = getCount(arr, names);
-    var sum = 0;
-    for (let i = 0; i < names.length; i++) {
-        if (objects[i].Unit != 'a') {
-            item = `Name: ${names[i]}, Quantity: ${counts[i]} ${objects[i].Unit}s, Unit price: ${objects[i].Price.toFixed(2)} (yuan), Subtotal: ${(objects[i].Price * counts[i]).toFixed(2)} (yuan)`;
-            sum += objects[i].Price * counts[i];
-        } else {
-            item = `Name: ${names[i]}, Quantity: ${counts[i]}, Unit price: ${objects[i].Price.toFixed(2)} (yuan), Subtotal: ${(objects[i].Price * counts[i]).toFixed(2)} (yuan)`;
-            sum += objects[i].Price * counts[i];
-        }
+    var items = inputs.reduce(function (itemList, next) {
+        JSON.stringify(itemList).includes(JSON.stringify(next.Name)) ? itemList.push() : itemList.push(next);
+        return itemList;
+    }, []);
 
-        strings.push(item);
-    }
+    // get item count.
+    items.map(item => item['count'] = inputs.map(i => i.Name == item.Name)
+        .reduce((count, value) => value ? count + 1 : count + 0));
 
-    var text = '***<store earning no money>Receipt ***\n' + strings.join('\n');
-    text += '\n----------------------\n' + 'Total: ' + sum.toFixed(2) + ' (yuan)\n' + '**********************\n';
-    return text;
-}
+    // get item Subtotal.
+    items.map(item => item['Subtotal'] = item.count * item.Price);
 
-function getCount(arr, itemNames) {
-    var count = [];
-    itemNames.forEach(num => {
-        let itemCount = 0;
-        arr.forEach(element => {
-            if (element.Name == num) itemCount++;
-        });
-        count.push(itemCount);
-    });
-    return count;
+    // get format string for each item.
+    var itemDescribe = [];
+    items.map(item => itemDescribe.push(`Name: ${item.Name}, Quantity: ${item.count}${item.Unit.length == 1?'':' '+ item.Unit + 's'}, Unit price: ${item.Price.toFixed(2)} (yuan), Subtotal: ${item.Subtotal.toFixed(2)} (yuan)`));
+
+    // get Total cost.
+    var sum = items.reduce(function (currentTotal, next) {
+        currentTotal += next.Subtotal;
+        return currentTotal;
+    }, 0);
+
+    // get txt.
+    var txt = `***<store earning no money>Receipt ***
+${itemDescribe.join('\n')}
+----------------------
+Total: ${sum.toFixed(2)} (yuan)
+**********************
+`;
+    return txt;
 }
